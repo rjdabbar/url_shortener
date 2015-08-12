@@ -18,6 +18,15 @@ class ShortenedURL < ActiveRecord::Base
     through: :visits,
     source: :visitor
 
+  has_many :taggings,
+    class_name: "Tagging",
+    foreign_key: :shortened_url_id,
+    primary_key: :id
+
+  has_many :tag_topics,
+    through: :taggings,
+    source: :tag_topic
+
   def self.create_for_user_and_long_url!(user, long_url)
     create!(submitter_id: user.id, long_url: long_url, short_url: random_code)
   end
