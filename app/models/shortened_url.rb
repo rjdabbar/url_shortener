@@ -27,4 +27,16 @@ class ShortenedURL < ActiveRecord::Base
       return random_url unless exists?(short_url: random_url)
     end
   end
+  # ASK ABOUT RUBY VS SQL HERE
+  def num_clicks
+    Visit.select(:visitor_id).where('shortened_url_id = ?', id).count
+  end
+
+  def num_uniques
+    Visit.select(:visitor_id).where('shortened_url_id = ?', id).distinct(:visitor_id).count
+  end
+
+  def num_recent_uniques
+    Visit.select(:visitor_id).where('shortened_url_id = ? AND created_at > ?', id, 10.minutes.ago).distinct(:visitor_id).count
+  end
 end
