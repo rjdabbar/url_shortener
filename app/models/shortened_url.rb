@@ -19,7 +19,7 @@ class ShortenedURL < ActiveRecord::Base
     source: :visitor
 
   def self.create_for_user_and_long_url!(user, long_url)
-    new(submitter_id: user.id, long_url: long_url, short_url: random_code)
+    create!(submitter_id: user.id, long_url: long_url, short_url: random_code)
   end
 
   def self.random_code
