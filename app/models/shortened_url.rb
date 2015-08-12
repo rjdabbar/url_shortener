@@ -3,6 +3,7 @@ class ShortenedURL < ActiveRecord::Base
   validates :short_url, presence: true, uniqueness: true
   validates :submitter_id, presence: true
   validate :submissions_not_too_frequent
+  validate :premium_or_less_than_5
 
   belongs_to :submitter,
     class_name: 'User',
@@ -59,6 +60,14 @@ class ShortenedURL < ActiveRecord::Base
     if ShortenedURL.select(:submitter_id).where('submitter_id = ? AND created_at > ?',
         submitter_id, 1.minute.ago).count > 5
      errors[:submitter_id] << "can't submit more than 5 urls in 1 minute"
+    end
+  end
+
+  def premium_or_less_than_5
+    return if User.find(submitter_id).premium
+    if ShortenedURL.select(:submitter_id).where('submitter_id = ?',
+        submitter_id).count > 5
+     errors[:submitter_id] << "is non-premium and so can't submit more than 5 urls"
     end
   end
 end
