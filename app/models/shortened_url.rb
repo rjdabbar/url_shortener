@@ -1,7 +1,8 @@
 class ShortenedURL < ActiveRecord::Base
-  validates :long_url, presence: true
+  validates :long_url, presence: true, length: { maximum: 1024 }
   validates :short_url, presence: true, uniqueness: true
   validates :submitter_id, presence: true
+  validate :submissions_not_too_frequent
 
   belongs_to :submitter,
     class_name: 'User',
@@ -49,5 +50,15 @@ class ShortenedURL < ActiveRecord::Base
   def num_recent_uniques
     Visit.select(:visitor_id).where('shortened_url_id = ? AND created_at > ?',
      id, 10.minutes.ago).distinct(:visitor_id).count
+  end
+
+
+  private
+
+  def submissions_not_too_frequent
+    if ShortenedURL.select(:submitter_id).where('submitter_id = ? AND created_at > ?',
+        submitter_id, 1.minute.ago).count > 5
+     errors[:submitter_id] << "can't submit more than 5 urls in 1 minute"
+    end
   end
 end
