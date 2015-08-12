@@ -39,7 +39,11 @@ class ShortenedURL < ActiveRecord::Base
       return random_url unless exists?(short_url: random_url)
     end
   end
-  # ASK ABOUT RUBY VS SQL HERE
+
+  def self.prune
+    delete(where('created_at < ?', 30.days.ago))
+  end
+
   def num_clicks
     Visit.select(:visitor_id).where('shortened_url_id = ?', id).count
   end
@@ -53,9 +57,8 @@ class ShortenedURL < ActiveRecord::Base
      id, 10.minutes.ago).distinct(:visitor_id).count
   end
 
-
   private
-
+  
   def submissions_not_too_frequent
     if ShortenedURL.select(:submitter_id).where('submitter_id = ? AND created_at > ?',
         submitter_id, 1.minute.ago).count > 5
